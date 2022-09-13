@@ -3,7 +3,7 @@ let mySqlConnection = mysql.createConnection({
     host : "localhost",
     user: "root",
     password: "",
-    database : "express_text",
+    database : "deb140017_dbs",
     multipleStatements : true,
 })
 
