@@ -20,11 +20,7 @@ module.exports.signUp = async (req, res) => {
         }
       })
     }
-
-
   })
-
-
 }
 
 module.exports.signIn = (req, res) => {
