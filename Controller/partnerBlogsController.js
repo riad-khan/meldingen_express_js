@@ -13,4 +13,11 @@ module.exports.partnerBlogDetails = async(req, res)=>{
     const details = await mysql.query(sql, (error, result, fields) =>{
             return res.status(200).send(result);
     })
+};
+
+module.exports.recentPartnerBlogs = (req, res)=>{
+    const sql = 'SELECT * FROM `partner_blogs` ORDER BY `created_at` DESC limit 5';
+    const blogs = mysql.query(sql,(error, result, fields)=>{
+            return res.status(200).send(result);
+    })
 }

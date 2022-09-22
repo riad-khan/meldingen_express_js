@@ -43,7 +43,7 @@ module.exports.sendContactEmail = async(req,res)=>{
         if(error){
             console.log(error);
         }else{
-            return res.status(200).send('contact email sent successfully');
+            return res.status(200).send('Message Sent Successfully');
         }
      })
 }

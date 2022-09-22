@@ -1,9 +1,12 @@
 const express = require('express');
-const { fetchPartnerBlogs, partnerBlogDetails } = require('../Controller/partnerBlogsController')
+const { fetchPartnerBlogs, partnerBlogDetails,recentPartnerBlogs } = require('../Controller/partnerBlogsController')
 const router = express.Router();
 
 router.route('/')
-    .get(fetchPartnerBlogs)
+    .get(fetchPartnerBlogs);
+
+    router.route('/recent-partner-blogs')
+        .get(recentPartnerBlogs)
 
 router.route('/:id')
     .get(partnerBlogDetails)
