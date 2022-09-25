@@ -4,7 +4,7 @@ const { createComment, getNewsComments } = require('../Controller/commentControl
 const authorization = require('../middlewares/authorization');
 
 
-router.route('/:id')
+router.route('/insert-comments')
     .post(authorization, createComment);
 
 router.route('/get-comments/:id')

@@ -2,7 +2,7 @@ const mysql = require('../connection');
 
 module.exports.createComment = async (req, res) => {
     const userId = req.user.id;
-    const newsId = req.params.id;
+    const newsId = req.body.news_id;
     const comments = req.body.comments;
     const sql = 'insert into news_comments (news_id,user_id,comments,posted_at,status)values(?,?,?,?,?)';
     const d = new Date();
