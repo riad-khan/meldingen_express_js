@@ -1,12 +1,10 @@
 const mySqlConnection = require('../connection')
 module.exports.fetchMeldingen = async(req, res)=>{
-  const meldingen =  await mySqlConnection.query('SELECT a.*, b.provincie,c.regio,d.categorie from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie d ON a.categorie = d.id limit 100',(error,rows,fields)=>{
+  const meldingen =  await mySqlConnection.query('SELECT a.*, b.provincie,c.regio,d.categorie from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie d ON a.categorie = d.id Order by a.id DESC limit 20 ',(error,rows,fields)=>{
        if(error){
             return res.send('no data found')
        }else{
-           return res.status(200).send({
-                  data: rows
-           })
+           return res.status(200).send(rows)
        }
     })
 }
