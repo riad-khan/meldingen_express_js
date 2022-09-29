@@ -5,6 +5,7 @@ let mySqlConnection = mysql.createConnection({
     password: "",
     database : "deb140017_dbs",
     multipleStatements : true,
+    connectionLimit: 100
 })
 
 
