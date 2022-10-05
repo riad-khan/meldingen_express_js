@@ -46,16 +46,27 @@ async function scrapeP2000(LastID = null) {
     var html = await $.Request(options)
     options.url = `https://monitor.p2000alarm.nl/ReadMonitor3.php?LastID=${LastID}`
     var html = await $.Request(options)
+
+    // console.log(html)
+
     html    = html.split('<D>')
+   
     LastID  = html[3]
+
     require('fs').writeFileSync('./lastid.json', JSON.stringify(LastID))
     html    = html[0].split('<M>')
     var conn = await $.Connection()
     for (var p2000 of html) {
       var dom     = $.Cheerio(`<table>${p2000}</table>`)
+
+     
+
+
       var $table  = dom('table')
       var obj     = {}
       obj.p2000     = $table.find('tr:first-child > td:last-child').text()
+
+      // checked working 
       obj.straat     = $table.find('.pAdrV').text()
       if (!obj.straat.contains(',')) {
         continue
@@ -63,7 +74,14 @@ async function scrapeP2000(LastID = null) {
       obj.stad        = obj.straat.split(',')[1].slug()
       obj.straat      = obj.straat.split(',')[0].trim()
       obj.straat_url  = obj.straat.slug()
+
+     //checked working
+
+
       var datum       = $table.find('tr:first-child > td:first-child').text()
+
+  
+
       var time        = $table.find('tr:nth-child(3) > .pTime').text()
       obj.timestamp   = $.Unix(`${datum} ${time}`, `DD-MM-YYYY HH:mm`)
       var dienst      = $table.find('tr:first-child > td:last-child').attr('class')
@@ -73,12 +91,24 @@ async function scrapeP2000(LastID = null) {
       obj.prio       = (obj.p2000.includes('grip')) ? 4 : obj.prio // ramp grote ingrijp
       obj.lat         = null
       obj.lng         = null
-      var json        = await $.Request(`https://maps.googleapis.com/maps/api/geocode/json?address=${obj.straat},${obj.stad},netherlands&key=xxxxxxxxx`)
-      if (json.results.length > 0) {
-        obj.lat = json.results[0].geometry.location.lat
-        obj.lng = json.results[0].geometry.location.lng
-      }
+      
+   
+      //checked worked
+
+      // var json        = await $.Request(`https://maps.googleapis.com/maps/api/geocode/json?address=${obj.straat},${obj.stad},netherlands&key=xxxxxxxxx`)
+     
+      // if (json.results.length > 0) {
+      //   obj.lat = json.results[0].geometry.location.lat
+      //   obj.lng = json.results[0].geometry.location.lng
+      // }
+
+      
       obj.categorie = await findCategory(obj)
+
+    
+    
+
+ 
       if (obj.categorie && !CACHE.id.categorie[obj.categorie.slug()]) {
         var results = await $.Query(conn, 'insert into categorie set ?', {id: null, categorie: obj.categorie, categorie_url: obj.categorie.slug()})
         CACHE.id.categorie[obj.categorie.slug()]  = results.insertId
@@ -87,6 +117,9 @@ async function scrapeP2000(LastID = null) {
       if (obj.categorie) {
         obj.categorie = CACHE.id.categorie[obj.categorie.slug()]
       }
+
+
+     
       obj.eenheden  = []
       $table.find('tr').each((i, el) => {
         try {
@@ -105,11 +138,16 @@ async function scrapeP2000(LastID = null) {
             eenheid.dienst = 'traumaheli'
           }
           obj.eenheden.push(eenheid)
+          
+
         } catch (err) {
           console.log(err)
         }
       })
       meldingen.push(obj)
+
+    
+     
     }
     // tijd voor DB insert/updates en rotzooi
     for (var melding of meldingen) {
@@ -126,10 +164,12 @@ async function scrapeP2000(LastID = null) {
       melding.regio     = rows[0].regio
       melding.stad      = rows[0].id
 
-      var post = [null, melding.p2000, melding.straat, melding.straat_url, melding.lat, melding.lng, melding.dienst, melding.prio, melding.timestamp, melding.categorie, melding.provincie, melding.regio, melding.stad]
+      var post = [null, melding.p2000, melding.straat, melding.straat_url, melding.lat, melding.lng, melding.dienst, melding.prio, melding.timestamp, melding.categorie, melding.provincie, melding.regio, melding.stad];
+     
+      
       var results = await $.Query(conn, 'insert ignore into melding (id, p2000, straat, straat_url, lat, lng, dienst, prio, timestamp, categorie, provincie, regio, stad) VALUES (?, ?, ?, ?, ?, ?, (select id from dienst where dienst = ?), ?, ?, ?, ?, ?, ?)', post)
       melding.id = results.insertId
-
+      console.log(melding.id);
       for (var eenheid of melding.eenheden) {
         var rows = await $.Query(conn, 'select * from capcode where capcode = ?', [eenheid.capcode])
         if (rows.length > 0) {
@@ -149,10 +189,15 @@ async function scrapeP2000(LastID = null) {
   } // 10 sec = 10 * 1000
   setTimeout(scrapeP2000, 10 * 900, LastID)
 }
+
+//news scrap
+
 async function scrapeNieuws() {
   try {
     var articles = []
     var results = await $.Request('https://www.politie.nl/nieuws')
+
+   
     var dom = $.Cheerio(results)
     dom('#main-content > section > section.listing-overzicht > div > a').each(async (i, el) => {
       var obj       = {}
@@ -161,12 +206,18 @@ async function scrapeNieuws() {
       var datetime  = $article.find('time').attr('datetime')
       obj.timestamp = $.Unix(`${datetime.split(' ')[0]} ${datetime.split(' ')[1]}`, `DD-MM-YYYY HH:mm`)
       obj.title     = $article.find('h3').text()
+
+     
+
       obj.title_url = obj.title.slug()
       obj.stad_url  = $article.find('p').text().split('/')[0].slug()
+    
       if (obj.stad_url == 'den-bosch') {
         obj.stad_url = 's-hertogenbosch'
       }
       articles.push(obj)
+
+      
     })
     for (var article of articles) {
       var rows = await $.Query('select * from stad where stad_url = ?', [article.stad_url])
@@ -198,6 +249,10 @@ async function scrapeNieuws() {
   } //10 min
   setTimeout(scrapeNieuws, 10 * 60 * 1000)
 }
+
+//end news Scraper
+
+
 async function cacheDB() {
   var conn = await $.Connection()
   for (var row of await $.Query(conn, 'select * from dienst')) {
@@ -225,6 +280,7 @@ async function cacheDB() {
 }
 async function findCategory(obj, c = null) {
   var p = obj.p2000.replace(obj.straat, '').toLowerCase() // remove adres and tolower
+ 
   p = p.replace(obj.stad.replace(/-/g, ' '), '') // remove city with spaces
   p = p.replace(obj.stad, '') // remove city
   p = p.replace(/\d{5,10}/gm, '') // replace ritnumbers 5 or higher
@@ -236,6 +292,8 @@ async function findCategory(obj, c = null) {
   p = p.replace(/\s\s+/g, ' ')
   var prio = obj.prio
   p = p.toLowerCase()
+
+  
 
   if (obj.prio == 1 && obj.dienst == 'ambulance') {
     // a1
@@ -607,7 +665,9 @@ async function findCategory(obj, c = null) {
       c = 'Kustwacht naar Burgermelding'
     }
   }
-  return c
+
+
+  return c;
 }
 
 Main()

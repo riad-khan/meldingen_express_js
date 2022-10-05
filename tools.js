@@ -89,7 +89,6 @@ $.Mysql = {
     password: "",
     database : "deb140017_dbs",
     multipleStatements : true,
-    connectionLimit: 100
   },
   pool: null
 }
