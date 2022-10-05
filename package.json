@@ -2,7 +2,11 @@
   "name": "express",
   "version": "1.0.0",
   "description": "",
+<<<<<<< HEAD
   "main": "server.js",
+=======
+  "main": "app.js",
+>>>>>>> c2833cfc7dc6b9845e0ad52883d7af2b7a607b02
   "scripts": {
     "start": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -27,6 +31,7 @@
     "nodemailer-express-handlebars": "^5.0.0",
     "nodemon": "^2.0.19",
     "path": "^0.12.7",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "util": "^0.12.4"
   }
 }
