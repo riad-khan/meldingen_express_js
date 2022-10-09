@@ -1,21 +1,4 @@
 const mySqlConnection = require('../connection')
-<<<<<<< HEAD
-module.exports.fetchMeldingen = (req, res)=>{
-    let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
-        sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
-        sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
-        sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit 20'
-
-
-  const meldingen = mySqlConnection.query(sql,
-  (error,rows,fields)=>{
-       if(error){
-            return res.send('no data found')
-       }else{
-           return res.status(200).send(rows)
-       }
-    })
-=======
 module.exports.fetchMeldingen = (req, res) => {
 
     const PageNumber = req.params.page == 0 ? 0 : req.params.page;
@@ -35,12 +18,10 @@ module.exports.fetchMeldingen = (req, res) => {
                 return res.status(200).send(rows)
             }
         })
->>>>>>> c2833cfc7dc6b9845e0ad52883d7af2b7a607b02
 }
 
 module.exports.meldingenDetails = async (req, res) => {
     const id = req.params.id;
-<<<<<<< HEAD
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
@@ -48,10 +29,6 @@ module.exports.meldingenDetails = async (req, res) => {
 
 
     const details = await mySqlConnection.query(sql,(error,rows,fields)=>{
-=======
-    const sql = 'SELECT a.*, b.provincie,c.regio,d.categorie from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie d ON a.categorie = d.id where a.id = ' + id;
-    const details = await mySqlConnection.query(sql, (error, rows, fields) => {
->>>>>>> c2833cfc7dc6b9845e0ad52883d7af2b7a607b02
         return res.status(200).send(rows)
     })
 
