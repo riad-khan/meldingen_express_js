@@ -26,7 +26,7 @@ module.exports.recentNews = (req, res)=>{
 
 module.exports.filteredNews = (req, res)=>{
         const regio = req.params.region
-        const sql = 'SELECT a.*,b.provincie,c.regio_url,c.regio,d.stad from nieuws a LEFT join provincie b ON a.provincie = b.id LEFT join regio c ON a.regio = c.id LEFT JOIN stad d ON a.stad = d.id where c.regio_url=? ORDER BY a.id DESC';
+        const sql = 'SELECT a.* FROM news a Left join stad c on a.city = c.stad Left join regio b  on b.id = c.regio where b.regio_url = "zuid-holland-zuid" GROUP by c.stad; ORDER BY a.id DESC';
         const data = mysql.query(sql,[regio],(error, results,fields)=>{
             if(!error) return res.status(200).send(results);
         })
