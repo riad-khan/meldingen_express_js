@@ -61,4 +61,16 @@ module.exports.fetchRegios = (req, res)=>{
     const data = mysql.query(sql,(error, result, fields)=>{
         return res.status(200).send(result)
     })
+};
+module.exports.recentMeldingen = (req, res)=>{
+    let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
+    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,e.dienst,f.stad,f.stad_url';
+    sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit 5';
+
+    mysql.query(sql,(error,results,fields)=>{
+        if(!error){
+            return res.send(results)
+        }
+    })
 }

@@ -6,7 +6,9 @@ const contactEmail = require('./routes/contactRouter');
 const profileRouter = require('./routes/profileRouter');
 const BlogRouter = require('./routes/blogRouter');
 const CommentRouter = require('./routes/commentRouter');
-const chartRouter = require('./routes/chartRouter')
+const chartRouter = require('./routes/chartRouter');
+const googleAuthRouter = require('./routes/googleAuthRouter');
+const fbAuthRouter = require('./routes/facebookAuthRouter');
 module.exports = (app) =>{
     app.use('/api/user',userRouter);
     app.use('/api/meldingen',meldingenRouter);
@@ -17,4 +19,6 @@ module.exports = (app) =>{
     app.use('/api/blogs',BlogRouter);
     app.use('/api/comments',CommentRouter);
     app.use('/api/charts',chartRouter);
+    app.use('/auth/google',googleAuthRouter);
+    app.use('/auth/facebook',fbAuthRouter)
 }

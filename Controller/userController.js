@@ -30,32 +30,34 @@ module.exports.signIn = (req, res) => {
   let rows = []
   const email = req.body.email;
   const password = req.body.password;
-  const findUser = mySqlConnection.query('select * from users where email = ? LIMIT 1', [email], (error, row, fields) => {
+  const findUser = mySqlConnection.query('select email,password from users where email = ? LIMIT 1', [email], (error, row, fields) => {
     if (row.length === 0) {
-       return res.status(404).send('user not found in database');
-    }else{
-      let passwordCompare = bcrypt.compareSync(req.body.password, row[0].password);
+      return res.status(404).send('user not found in database');
+    } else {
+      if (row[0].password !== null) {
+        let passwordCompare = bcrypt.compareSync(req.body.password, row[0].password);
         if (passwordCompare) {
-        const jwt = sign({
-          id: row[0].id,
-          name: row[0].name,
-          email: row[0].email,
+          const jwt = sign({
+            id: row[0].id,
+            name: row[0].name,
+            email: row[0].email,
 
-        }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
+          }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
 
-        return res.send({
-          access_token: jwt
-        });
-      }else {
-        return res.status(400).send("incorrect password")
+          return res.send({
+            access_token: jwt
+          });
+        }
+      } else {
+        return res.status(400).send("please Check your credentials")
       };
-      
+
     }
 
-   
-     
-    
-    
+
+
+
+
 
   })
 }

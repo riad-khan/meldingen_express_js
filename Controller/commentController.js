@@ -12,7 +12,7 @@ module.exports.createComment = async (req, res) => {
             if(!error){
                 return res.status(201).send('Comments created successfully')
             }else{
-                console.log('something went wrong');
+               console.log(error);
             }
         })
 }
