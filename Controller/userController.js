@@ -61,3 +61,9 @@ module.exports.signIn = (req, res) => {
 
   })
 }
+
+module.exports.userInfo = (req,res)=>{
+  const id = req.params.id;
+  let sql = 'select profile_pic,name from users where id =?';
+  const data = mysql.query()
+}
