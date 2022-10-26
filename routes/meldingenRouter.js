@@ -1,5 +1,5 @@
 const express = require('express')
-const { fetchMeldingen, meldingenDetails, filterMeldingen, searchComplete } = require('../Controller/meldingenController');
+const { fetchMeldingen, meldingenDetails, filterMeldingen, searchComplete,meldingenEnheeden } = require('../Controller/meldingenController');
 const router = express.Router();
 
 router.route('/scroll-more/:page')
@@ -12,6 +12,9 @@ router.route('/filter-meldingen/:regio/:page')
         .get(filterMeldingen)
 router.route('/auto/search/')
         .get(searchComplete)
+
+        router.route('/enheeden/:id')
+        .get(meldingenEnheeden)
 
 module.exports = router
 

@@ -1,38 +1,51 @@
 const mySqlConnection = require('../connection')
-module.exports.fetchMeldingen = (req, res) => {
+
+//async meldingens
+module.exports.fetchMeldingen = async (req, res) => {
 
     const PageNumber = req.params.page == 0 ? 0 : req.params.page;
     const limit = 10;
     const offset = PageNumber * limit;
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
-    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,e.dienst,f.stad,f.stad_url';
+    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
-    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit ' + offset + ',' + limit;
-
-
-    const meldingen = mySqlConnection.query(sql,
-        (error, rows, fields) => {
-            if (error) {
-                return res.send('no data found')
-            } else {
-                return res.status(200).send(rows)
-            }
-        })
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit ?,?';
+    const data = await meldingen(sql,offset,limit);
+    return res.send(data)
 }
+
+const meldingen = (sql,offset,limit)=>{
+    return new Promise((resolve, reject) => {
+        let query = mySqlConnection.query(sql,[offset,limit],(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+
+
+//async meldingen details
 
 module.exports.meldingenDetails = async (req, res) => {
     const id = req.params.id;
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
-    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where a.id ='+id
-
-
-    const details = await mySqlConnection.query(sql,(error,rows,fields)=>{
-        return res.status(200).send(rows)
-    })
+    sql += ` d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where a.id =?`
+    const detail = await details(sql,id);
+    return res.send(detail[0])
 
 }
+
+const details = (sql,id)=>{
+    return new Promise((resolve, reject) => {
+        let query = mySqlConnection.query(sql,[id],(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+
 
 module.exports.filterMeldingen = async (req, res) => {
     const regio = req.params.regio;
@@ -52,8 +65,6 @@ module.exports.filterMeldingen = async (req, res) => {
         }
     })
 
-
-
 }
 
 
@@ -71,3 +82,23 @@ module.exports.searchComplete = async (req, res) => {
     
 
 }
+
+
+
+module.exports.meldingenEnheeden = async(req,res)=>{
+    const id = req.params.id;
+    let sql = `SELECT b.capcode,b.omschrijving,c.dienst FROM eenheden a LEFT join capcode b on a.capcode = b.id LEFT JOIN dienst c on b.dienst = c.id WHERE a.melding =?`;
+    const data = await enheeden(sql,id);
+    return res.send(data)
+}
+
+const enheeden = (sql,id)=>{
+    return new Promise((resolve, reject) => {
+        let query = mySqlConnection.query(sql,[id], (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+
+

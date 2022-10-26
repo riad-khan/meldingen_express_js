@@ -3,6 +3,7 @@ const { getAllNews, newsDetails, recentNews, filteredNews, fetchRegios, getOther
 const router = express.Router();
 
 
+
 router.route('/')
     .get(getAllNews)
 router.route('/:id')
