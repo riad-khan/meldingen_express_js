@@ -1,23 +1,45 @@
 const mysql = require('../connection');
 
 module.exports.fetchPartnerBlogs = async (req, res) => {
-    const sql = 'SELECT * FROM `partner_blogs` WHERE`status`= "published"';
-    const blogs = await mysql.query(sql, (error, result, fields) => {
-        return res.send(result);
+    const sql = 'SELECT id,blog_title,description,content,images,slug,seo_keywords,seo_meta,seo_meta,status,created_at FROM `partner_blogs` WHERE`status`= "published"';
+   const data = await partnerBlog(sql);
+   return res.send(data)
+}
+
+const partnerBlog = (sql)=>{
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql, (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+module.exports.partnerBlogDetails = async(req, res)=>{
+    const id = req.params.id;
+    const sql = 'SELECT id,blog_title,description,content,images,slug,seo_keywords,seo_meta,seo_meta,status,created_at FROM `partner_blogs` WHERE`status`= "published" and id =?';
+    const data = await details(sql,id);
+    return res.send(data[0])
+};
+const details = (sql,id)=>{
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql,[id],(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
     })
 }
 
-module.exports.partnerBlogDetails = async(req, res)=>{
-    const id = req.params.id;
-    const sql = 'SELECT * FROM `partner_blogs` WHERE`status`= "published" and id ='+id;
-    const details = await mysql.query(sql, (error, result, fields) =>{
-            return res.status(200).send(result);
-    })
-};
+module.exports.recentPartnerBlogs = async (req, res)=>{
+    const sql = 'SELECT id,blog_title,description,content,images,slug,seo_keywords,seo_meta,seo_meta,status,created_at FROM `partner_blogs` ORDER BY `created_at` DESC limit 5';
+   const data = await recent(sql);
+   return res.send(data)
+}
 
-module.exports.recentPartnerBlogs = (req, res)=>{
-    const sql = 'SELECT * FROM `partner_blogs` ORDER BY `created_at` DESC limit 5';
-    const blogs = mysql.query(sql,(error, result, fields)=>{
-            return res.status(200).send(result);
+const recent = (sql)=>{
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql,(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
     })
 }
