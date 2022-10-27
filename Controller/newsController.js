@@ -57,8 +57,6 @@ module.exports.newsDetails = async (req, res) => {
         return res.send(myCache.get(`${key}`));
     }
 
-
-
 }
 
 const news_details = (id) => {

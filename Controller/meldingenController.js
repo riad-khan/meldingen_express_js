@@ -13,7 +13,6 @@ module.exports.fetchMeldingen = async (req, res) => {
     const data = await meldingen(sql,offset,limit);
     return res.send(data)
 }
-
 const meldingen = (sql,offset,limit)=>{
     return new Promise((resolve, reject) => {
         let query = mySqlConnection.query(sql,[offset,limit],(error, result, fields) => {
@@ -55,16 +54,17 @@ module.exports.filterMeldingen = async (req, res) => {
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
-    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where c.regio_url =? Order by a.id DESC limit ' + offset + ',' + limit;
-
-    const result = mySqlConnection.query(sql, [regio], (error, rows, fields) => {
-        if (!error) {
-            return res.send(rows);
-        } else {
-            console.log(error);
-        }
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where c.regio_url =? Order by a.id DESC limit ?,?';
+    const data = await filter(sql,regio,offset,limit);
+    return res.send(data);
+};
+const filter = (sql,regio,offset,limit) =>{
+    return new Promise((resolve, reject) => {
+        let query = mySqlConnection.query(sql,[regio,offset,limit],(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
     })
-
 }
 
 
