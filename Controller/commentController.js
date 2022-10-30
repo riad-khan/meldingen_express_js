@@ -17,9 +17,27 @@ module.exports.createComment = async (req, res) => {
         })
 }
 
+module.exports.commentsCount = async (req, res)=>{
+    let sql = `SELECT count(id) as total FROM news_comments where status = 1;`
+    const data = await totalCommentsCount(sql);
+    return res.send(data[0]);
+}
+
+const totalCommentsCount = (sql) =>{
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql,(error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+
 module.exports.getNewsComments = async(req, res)=>{
      const newsId = req.params.id;
-     const sql = 'SELECT a.*,b.name FROM `news_comments` a LEFT JOIN users b ON a.user_id = b.id where a.news_id=? and a.status=?';
+     const PageNumber = req.params.page == 0 ? 0 : req.params.page;
+     const limit = 2;
+     const offset = PageNumber * limit;
+     const sql = `SELECT a.news_id,a.user_id,a.comments,a.posted_at,b.name FROM news_comments a LEFT JOIN users b ON a.user_id = b.id where a.news_id=? and a.status=? limit ${offset},${limit}`;
      mysql.query(sql,[newsId,1],(error,result,fields)=>{
         return res.status(200).json(result)
      })

@@ -1,3 +1,4 @@
+const e = require('express');
 const mySqlConnection = require('../connection')
 
 //async meldingens
@@ -10,12 +11,12 @@ module.exports.fetchMeldingen = async (req, res) => {
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
     sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit ?,?';
-    const data = await meldingen(sql,offset,limit);
+    const data = await meldingen(sql, offset, limit);
     return res.send(data)
 }
-const meldingen = (sql,offset,limit)=>{
+const meldingen = (sql, offset, limit) => {
     return new Promise((resolve, reject) => {
-        let query = mySqlConnection.query(sql,[offset,limit],(error, result, fields) => {
+        let query = mySqlConnection.query(sql, [offset, limit], (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
@@ -31,14 +32,14 @@ module.exports.meldingenDetails = async (req, res) => {
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
     sql += ` d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where a.id =?`
-    const detail = await details(sql,id);
+    const detail = await details(sql, id);
     return res.send(detail[0])
 
 }
 
-const details = (sql,id)=>{
+const details = (sql, id) => {
     return new Promise((resolve, reject) => {
-        let query = mySqlConnection.query(sql,[id],(error, result, fields) => {
+        let query = mySqlConnection.query(sql, [id], (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
@@ -52,49 +53,46 @@ module.exports.filterMeldingen = async (req, res) => {
     const limit = 21;
     const offset = PageNumber * limit;
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
-    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,e.dienst,f.stad,f.stad_url';
+    sql += ' b.provincie,b.provincie_url,c.regio,c.regio_url,d.categorie,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
-    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where c.regio_url =? Order by a.id DESC limit ?,?';
-    const data = await filter(sql,regio,offset,limit);
-    return res.send(data);
-};
-const filter = (sql,regio,offset,limit) =>{
-    return new Promise((resolve, reject) => {
-        let query = mySqlConnection.query(sql,[regio,offset,limit],(error, result, fields) => {
-            if (error) return reject(error);
-            resolve(Object.values(JSON.parse(JSON.stringify(result))))
-        })
-    })
-}
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where c.regio_url like "%' + regio + '%" or b.provincie_url like "%' + regio + '%" or f.stad_url like "%' + regio + '%" Order by a.id DESC limit ' + offset + ',' + limit;
 
+    let query = mySqlConnection.query(sql, [regio, offset, limit], (error, result, fields) => {
+        if (!error) {
+            return res.send(result);
+        } else {
+            console.log(error);
+        }
+    })
+};
 
 module.exports.searchComplete = async (req, res) => {
     const searchString = req.query.search;
     let sql = `SELECT a.stad,a.stad_url,b.provincie,b.provincie_url,c.regio,c.regio_url from stad a, provincie b, regio c WHERE a.stad LIKE '${searchString}%' and a.provincie = b.id and a.regio = c.id limit 10`;
-    const result = await mySqlConnection.query(sql,(error,rows,fields)=>{
-      if(error){
-        return res.send(error)
-      }else{
-       return res.send(rows)
-      }
+    const result = await mySqlConnection.query(sql, (error, rows, fields) => {
+        if (error) {
+            return res.send(error)
+        } else {
+            return res.send(rows)
+        }
     })
 
-    
+
 
 }
 
 
 
-module.exports.meldingenEnheeden = async(req,res)=>{
+module.exports.meldingenEnheeden = async (req, res) => {
     const id = req.params.id;
     let sql = `SELECT b.capcode,b.omschrijving,c.dienst FROM eenheden a LEFT join capcode b on a.capcode = b.id LEFT JOIN dienst c on b.dienst = c.id WHERE a.melding =?`;
-    const data = await enheeden(sql,id);
+    const data = await enheeden(sql, id);
     return res.send(data)
 }
 
-const enheeden = (sql,id)=>{
+const enheeden = (sql, id) => {
     return new Promise((resolve, reject) => {
-        let query = mySqlConnection.query(sql,[id], (error, result, fields) => {
+        let query = mySqlConnection.query(sql, [id], (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
