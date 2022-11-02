@@ -293,6 +293,8 @@ const province24Hours = (sql) => {
 }
 
 module.exports.emergencyMeldingen = async (req, res) => {
+    const hour = req.params.hour;
+    const emergency = JSON.stringify(req.params.dienst);
     let dienst = [
         { dienst: "ambulance", total: 0 },
         { dienst: "brandweer", total: 0 },
@@ -305,7 +307,7 @@ module.exports.emergencyMeldingen = async (req, res) => {
     
     let total = 0;
     let sql = `SELECT count(a.id) total,b.dienst from melding a LEFT Join dienst b on a.dienst = b.id where a.dienst <>"" and 
-    FROM_UNIXTIME(a.timestamp) > NOW() - INTERVAL 24 HOUR 
+    FROM_UNIXTIME(a.timestamp) > NOW() - INTERVAL ${hour} HOUR 
     GROUP by b.dienst order by b.dienst ASC`;
 
     const sql_data = await emergencyCount(sql);
@@ -321,7 +323,7 @@ module.exports.emergencyMeldingen = async (req, res) => {
     })
 
 
-       let chartQuery = `select count(a.id) calculated,HOUR(FROM_UNIXTIME(a.timestamp)) time,b.dienst from melding a LEFT join dienst  b on a.dienst = b.id  where FROM_UNIXTIME(a.timestamp) > NOW() - INTERVAL 24 HOUR and b.dienst = "ambulance" group by HOUR(FROM_UNIXTIME(a.timestamp));`
+       let chartQuery = `select count(a.id) calculated,HOUR(FROM_UNIXTIME(a.timestamp)) time,b.dienst from melding a LEFT join dienst  b on a.dienst = b.id  where FROM_UNIXTIME(a.timestamp) > NOW() - INTERVAL ${hour} HOUR and b.dienst = ${emergency} group by HOUR(FROM_UNIXTIME(a.timestamp));`
        mysql.query(chartQuery,(error, result, fields)=>{
             if(!error){
                 res.send({
