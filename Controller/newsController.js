@@ -3,18 +3,55 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 600 });
 
 module.exports.getAllNews = async (req, res) => {
-    const sql = 'select * from news  order by id DESC limit 5';
-    let key = "news"
-    if (myCache.has(`${key}`)) {
-        return res.send(myCache.get(`${key}`));
+    const news_sql = 'select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news  order by id DESC limit 5';
+    let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
+    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
+    sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit 5';
+
+    let seoQuery = 'select title,seo_keywords,seo_meta,structured_data,page from seo_data_tables where page = "Nieuws"'
+
+    let newsCacheValue = myCache.get('news');
+    let newsSeoCacheValue = myCache.get('seo_news');
+
+    const recent = await recentMeldingen(sql);
+    if (newsCacheValue == undefined || newsSeoCacheValue == undefined) {
+        const allNews = await news(news_sql);
+        const seo = await seo_fetch(seoQuery);
+        myCache.set('news', allNews, 3600);
+        myCache.set('seo_news', seo[0], 86400);
+        return res.send({
+            news: myCache.get('news'),
+            recentMeldingen: recent,
+            seo: myCache.get('seo_news'),
+        })
     } else {
-        const data = await news(sql);
-        myCache.set(`${key}`, data, 300);
-        return res.send(data)
+        console.log('news api cache');
+        return res.send({
+            news: myCache.get('news'),
+            recentMeldingen: recent,
+            seo: myCache.get('seo_news'),
+        })
     }
 
 }
+const recentMeldingen = (sql) => {
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql, (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
 const news = (sql) => {
+    return new Promise((resolve, reject) => {
+        let query = mysql.query(sql, (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+const seo_fetch = (sql) => {
     return new Promise((resolve, reject) => {
         let query = mysql.query(sql, (error, result, fields) => {
             if (error) return reject(error);
@@ -46,22 +83,31 @@ module.exports.getMoreOtherNews = (req, res) => {
 
 module.exports.newsDetails = async (req, res) => {
     let id = req.params.id;
-    let key = `news_details ${id}`;
+    const details = await news_details(id);
+    let seoQuery = 'select title,seo_keywords,seo_meta,structured_data,page from seo_data_tables where page = "Nieuws"'
+    const seo_data = await seo_fetch(seoQuery);
+    const recent_news = await recent();
 
-    if (myCache.get(`${key}`) == undefined) {
-        const data = await news_details(id);
-        myCache.set(`${key}`, data[0], 3600);
-        return res.send(data[0])
-    } else {
-        console.log('from cache');
-        return res.send(myCache.get(`${key}`));
-    }
-
+   return res.send({
+    details: details[0],
+    seo_data : seo_data[0],
+    recent_news : recent_news,
+   })
+  
 }
 
 const news_details = (id) => {
     return new Promise((resolve, reject) => {
-        let query = mysql.query('select * from news where id =?', [id], (error, result, fields) => {
+        let query = mysql.query('select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news where id =?', [id], (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
+}
+
+const recent = (sql) => {
+    return new Promise((resolve, reject) => {
+        let query = mysql.query('SELECT id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news order by id DESC limit 6', (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
@@ -69,29 +115,22 @@ const news_details = (id) => {
 }
 
 module.exports.recentNews = async (req, res) => {
-    const data = await recent();
-    return res.send(data)
+    
+   
 };
 
-const recent = (sql)=>{
-    return new Promise((resolve, reject) => {
-        let query = mysql.query('SELECT * from news order by id DESC limit 6', (error, result, fields) => {
-            if (error) return reject(error);
-            resolve(Object.values(JSON.parse(JSON.stringify(result))))
-        })
-    })
-}
+
 
 module.exports.filteredNews = (req, res) => {
     const region = req.params.region;
     const sql = `SELECT * FROM news WHERE state LIKE "%${region}%" or city LIKE "%${region}%" or staddress LIKE "%${region}%" order by id DESC limit 7`;
     const data = mysql.query(sql, (error, results, fields) => {
-        if(error){
+        if (error) {
             console.log(error);
-        }else{
+        } else {
             return res.status(200).send(results)
         }
-        
+
     })
 };
 module.exports.fetchRegios = async (req, res) => {
@@ -102,7 +141,7 @@ module.exports.fetchRegios = async (req, res) => {
 
     if (value == undefined) {
         const data = await regio(sql);
-        myCache.set(key, data,0);
+        myCache.set(key, data, 0);
         return res.send(data);
     } else {
         console.log('regio cache');
