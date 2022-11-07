@@ -1,9 +1,9 @@
 const mysql = require('../connection');
 const NodeCache = require("node-cache");
-const myCache = new NodeCache({ stdTTL: 600 });
+const myCache = new NodeCache();
 
 module.exports.getAllNews = async (req, res) => {
-    const news_sql = 'select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news  order by id DESC limit 5';
+    const news_sql = 'select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,city,staddress,postal,image,seo_keywords,seo_meta from news  order by id DESC limit 5';
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
@@ -98,7 +98,7 @@ module.exports.newsDetails = async (req, res) => {
 
 const news_details = (id) => {
     return new Promise((resolve, reject) => {
-        let query = mysql.query('select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news where id =?', [id], (error, result, fields) => {
+        let query = mysql.query('select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,city,staddress,postal,image,seo_keywords,seo_meta from news where id =?', [id], (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
@@ -107,7 +107,7 @@ const news_details = (id) => {
 
 const recent = (sql) => {
     return new Promise((resolve, reject) => {
-        let query = mysql.query('SELECT id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,regio,city,staddress,postal,image,seo_keywords,seo_meta from news order by id DESC limit 6', (error, result, fields) => {
+        let query = mysql.query('SELECT id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,city,staddress,postal,image,seo_keywords,seo_meta from news where state <>"" and city <>"" order by id DESC limit 6', (error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })
@@ -115,24 +115,11 @@ const recent = (sql) => {
 }
 
 module.exports.recentNews = async (req, res) => {
-    
-   
+    const recent_news = await recent();
+    return res.send(recent_news)
 };
 
 
-
-module.exports.filteredNews = (req, res) => {
-    const region = req.params.region;
-    const sql = `SELECT * FROM news WHERE state LIKE "%${region}%" or city LIKE "%${region}%" or staddress LIKE "%${region}%" order by id DESC limit 7`;
-    const data = mysql.query(sql, (error, results, fields) => {
-        if (error) {
-            console.log(error);
-        } else {
-            return res.status(200).send(results)
-        }
-
-    })
-};
 module.exports.fetchRegios = async (req, res) => {
     const sql = "SELECT a.regio,a.regio_url,b.provincie,b.provincie_url FROM regio a LEFT join provincie b on a.provincie = b.id where a.provincie <>'';"
 
@@ -159,7 +146,26 @@ const regio = (sql) => {
         })
     })
 };
-module.exports.recentMeldingen = (req, res) => {
+
+
+module.exports.filteredNews = (req, res) => {
+    const region = req.params.region;
+    const PageNumber = req.params.page == 0 ? 0 : req.params.page;
+    const limit = 5;
+    const offset = PageNumber * limit;
+    
+    const sql = `SELECT * FROM news WHERE state LIKE "%${region}%" or city LIKE "%${region}%" or staddress LIKE "%${region}%" and state <>"" and city <>""  order by id DESC limit ${offset}, ${limit}`;
+    const data = mysql.query(sql, (error, results, fields) => {
+        if (error) {
+            console.log(error);
+        } else {
+            return res.status(200).send(results)
+        }
+
+    })
+};
+
+module.exports.recentMeldingens = (req, res) => {
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';

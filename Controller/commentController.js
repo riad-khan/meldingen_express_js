@@ -18,14 +18,15 @@ module.exports.createComment = async (req, res) => {
 }
 
 module.exports.commentsCount = async (req, res)=>{
-    let sql = `SELECT count(id) as total FROM news_comments where status = 1;`
-    const data = await totalCommentsCount(sql);
+    const news_id = req.params.id
+    let sql = `SELECT count(id) as total FROM news_comments where news_id = ? and status = 1;`
+    const data = await totalCommentsCount(sql,news_id);
     return res.send(data[0]);
 }
 
-const totalCommentsCount = (sql) =>{
+const totalCommentsCount = (sql,news_id) =>{
     return new Promise((resolve, reject) => {
-        let query = mysql.query(sql,(error, result, fields) => {
+        let query = mysql.query(sql,[news_id],(error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })

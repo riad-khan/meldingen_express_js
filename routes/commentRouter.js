@@ -10,7 +10,7 @@ router.route('/insert-comments')
 router.route('/get-comments/:id/:page')
     .get(getNewsComments);
     
-    router.route('/total-comments/')
+    router.route('/total-comments/:id')
     .get(commentsCount)
 
 module.exports = router;

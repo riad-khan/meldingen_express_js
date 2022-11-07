@@ -10,6 +10,8 @@ const chartRouter = require('./routes/chartRouter');
 const googleAuthRouter = require('./routes/googleAuthRouter');
 const fbAuthRouter = require('./routes/facebookAuthRouter');
 const seoRouter = require('./routes/seoRouter');
+const commonRoutes = require('./routes/privacyRouter');
+const favouriteRoutes = require('./routes/favNewsRouter')
 module.exports = (app) =>{
     app.use('/api/user',userRouter);
     app.use('/api/meldingen',meldingenRouter);
@@ -23,4 +25,6 @@ module.exports = (app) =>{
     app.use('/auth/google',googleAuthRouter);
     app.use('/auth/facebook',fbAuthRouter);
     app.use('/api/seo-data',seoRouter);
+    app.use('/api/common',commonRoutes);
+    app.use('/api/fav',favouriteRoutes);
 }

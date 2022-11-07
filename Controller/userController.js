@@ -109,7 +109,7 @@ module.exports.updateProfile = async (req, res) => {
 
 module.exports.fetchUserComments = async (req, res) => {
   const id = req.params.id;
-  let sql = `select a.*,b.title from news_comments a left join news b on a.news_id = b.id where a.user_id = ${id}`;
+  let sql = `select a.*,b.title,b.description from news_comments a left join news b on a.news_id = b.id where a.user_id = ${id}`;
   mySqlConnection.query(sql, (error, results, fields) => {
       if(!error){
         return res.status(200).send(results);

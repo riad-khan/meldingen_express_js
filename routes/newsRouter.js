@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllNews, newsDetails, recentNews, filteredNews, getOtherNews, getMoreOtherNews,recentMeldingen } = require('../Controller/newsController');
+const { getAllNews, newsDetails, recentNews, filteredNews, getOtherNews, getMoreOtherNews,recentMeldingens,fetchRegios } = require('../Controller/newsController');
 const router = express.Router();
 
 
@@ -19,8 +19,14 @@ router.route('/getMoreOtherNews/:page')
     .get(getMoreOtherNews)
 
 
-router.route('/filter-news/:region')
+router.route('/filter-news/:region/:page')
     .get(filteredNews)
+
+    router.route('/fetch/regios')
+    .get(fetchRegios)
+
+    router.route('/recent/meldingen')
+    .get(recentMeldingens)
 
 
 
