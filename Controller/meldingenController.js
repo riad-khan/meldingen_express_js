@@ -12,7 +12,10 @@ module.exports.fetchMeldingen = async (req, res) => {
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
     sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.timestamp DESC limit ?,?';
     const data = await meldingen(sql, offset, limit);
-    return res.send(data)
+    return res.send({
+        data : data,
+        nextReq : true,
+    })
 }
 const meldingen = (sql, offset, limit) => {
     return new Promise((resolve, reject) => {
@@ -24,17 +27,40 @@ const meldingen = (sql, offset, limit) => {
 }
 
 
+
+
 //async meldingen details
 
 module.exports.meldingenDetails = async (req, res) => {
     const id = req.params.id;
+
+
+    let recent_sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
+    recent_sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
+    recent_sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
+    recent_sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit 5';
+
+
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
     sql += ` d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id where a.id =?`
     const detail = await details(sql, id);
-    return res.send(detail[0])
+    const recent = await recentMeldingen(recent_sql)
+    return res.send({
+        details: detail[0],
+        recentMeldingen : recent
+    })
 
+}
+
+const recentMeldingen = (sql) => {
+    return new Promise((resolve, reject) => {
+        let query = mySqlConnection.query(sql, (error, result, fields) => {
+            if (error) return reject(error);
+            resolve(Object.values(JSON.parse(JSON.stringify(result))))
+        })
+    })
 }
 
 const details = (sql, id) => {

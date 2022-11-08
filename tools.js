@@ -85,9 +85,9 @@ $.Cookies = (jar) => {
 $.Mysql = {
   settings: {
     host : "localhost",
-    user: "weesolut_riad",
-    password: "Diit54321@#$",
-    database : "weesolut_meldingen",
+    user: "root",
+    password: "",
+    database : "deb140017_dbs",
     multipleStatements : true,
     connectionLimit: 100
   },

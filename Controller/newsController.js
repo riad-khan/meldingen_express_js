@@ -84,14 +84,18 @@ module.exports.getMoreOtherNews = (req, res) => {
 module.exports.newsDetails = async (req, res) => {
     let id = req.params.id;
     const details = await news_details(id);
+    let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
+    sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
+    sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
+    sql += ' d ON a.categorie = d.id LEFT JOIN dienst e ON a.dienst = e.id LEFT JOIN stad f ON a.stad = f.id Order by a.id DESC limit 5';
     let seoQuery = 'select title,seo_keywords,seo_meta,structured_data,page from seo_data_tables where page = "Nieuws"'
     const seo_data = await seo_fetch(seoQuery);
-    const recent_news = await recent();
+    const recent = await recentMeldingen(sql);
 
    return res.send({
     details: details[0],
     seo_data : seo_data[0],
-    recent_news : recent_news,
+    recentMeldingen : recent,
    })
   
 }
