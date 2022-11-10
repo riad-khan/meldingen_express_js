@@ -1,5 +1,6 @@
 host : "localhost",
-user: "weesolutionsit_riad",
-password: "4y2FV(TNhqJ}",
-database : "weesolutionsit_deb140017_dbs",
-multipleStatements : true,
+    user: "weesolut_riad",
+    password: "Diit54321@#$",
+    database : "weesolut_meldingen",
+    multipleStatements : true,
+    connectionLimit: 100

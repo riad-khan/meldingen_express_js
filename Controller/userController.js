@@ -3,6 +3,11 @@ const mySqlConnection = require('../connection')
 const { sign } = require('jsonwebtoken');
 const { stringify } = require('flatted');
 const e = require('cors');
+const crypto = require('crypto');
+const nodeMailer = require('nodemailer');
+const hbs = require('nodemailer-express-handlebars');
+const path = require('path');
+
 module.exports.signUp = async (req, res) => {
   const name = req.body.name;
   const email = req.body.email;
@@ -129,4 +134,80 @@ module.exports.deleteComments = async (req, res)=>{
           console.log(error);
         };
     })
+}
+
+module.exports.forgotPassword = (req, res)=>{
+  const email = req.body.email;
+  var token = crypto.randomBytes(64).toString('hex');
+  let findUserSql = 'select email from users where email = ?';
+  mySqlConnection.query(findUserSql,[req.body.email],(error,rows,fields)=>{
+    if(rows.length == 0){
+        return res.send("email doesn't exist in our records")
+    }else{
+      //step 1
+     const transporter = nodeMailer.createTransport({
+      service:'gmail',
+      auth:{
+          user:'riadkhan2367@gmail.com',
+          pass:'khkjbqbmnflqlnfg'
+      }
+   }) 
+
+   const handlebarOptions ={
+    viewEngine : {
+        extName : ".hbs",
+        partialDir : path.join(__basedir+ '/views'),
+        defaultLayout : false,
+    },
+    viewPath : path.join(__basedir + '/views'),
+    extName : '.hbs',
+ } 
+
+ transporter.use('compile',hbs(handlebarOptions));
+ const mailOptions = {
+    from:'riadkhan2367@gmail.com',
+    to:'rdxriad236@gmail.com',
+    subject:'password reset email',
+    text:'Hello dear here is your password reset email for meldingen.nl',
+    template:'reset',
+    context:{
+       
+        email: email,
+        token: token,
+    }
+ }
+
+  transporter.sendMail(mailOptions,(error, info)=>{
+  if(error){
+      console.log(error);
+  }else{
+      return res.status(200).send('Password reset link sent to email');
+  }
+})
+
+    }
+  })
+}
+
+module.exports.getDashboardCount = async (req, res)=>{
+  let fav_sql = `SELECT count(id) as total from fav_news where user_id = ${req.params.id}`;
+  let reacties_sql = `SELECT count(id) as total from news_comments where user_id = ${req.params.id}`;
+
+
+  mySqlConnection.query(fav_sql,(error,rows,fields)=>{
+    if(!error){
+        mySqlConnection.query(reacties_sql,(errors,results,fields)=>{
+          if(errors){
+              console.log(errors);
+          }else{
+            return res.send({
+              fav_news : rows[0],
+              comments: results[0],
+            })
+          }
+        })
+    }
+  })
+
+
 }

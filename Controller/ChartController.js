@@ -302,7 +302,6 @@ module.exports.emergencyMeldingen = async (req, res) => {
         { dienst: "politie", total: 0 },
         { dienst: 'traumaheli', total: 0 },
 
-
     ]
     
     let total = 0;
