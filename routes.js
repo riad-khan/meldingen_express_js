@@ -11,7 +11,8 @@ const googleAuthRouter = require('./routes/googleAuthRouter');
 const fbAuthRouter = require('./routes/facebookAuthRouter');
 const seoRouter = require('./routes/seoRouter');
 const commonRoutes = require('./routes/privacyRouter');
-const favouriteRoutes = require('./routes/favNewsRouter')
+const favouriteRoutes = require('./routes/favNewsRouter');
+const adsRoutes = require('./routes/adsRoute');
 module.exports = (app) =>{
     app.use('/api/user',userRouter);
     app.use('/api/meldingen',meldingenRouter);
@@ -27,4 +28,5 @@ module.exports = (app) =>{
     app.use('/api/seo-data',seoRouter);
     app.use('/api/common',commonRoutes);
     app.use('/api/fav',favouriteRoutes);
+    app.use('/api/ads',adsRoutes);
 }

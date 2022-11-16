@@ -3,5 +3,5 @@ const app = express();
 require(`./tools`)
 require('./middlewares')(app);
 require('./routes')(app);
-require('./scraper')
+//require('./scraper')
 module.exports = app ;
