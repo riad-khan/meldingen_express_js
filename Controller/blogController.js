@@ -31,14 +31,15 @@ const details = (sql,id) =>{
 }
 
 module.exports.recentBlogs = async (req, res)=>{
-    const sql = 'SELECT * FROM `blogs` where status = "published" ORDER BY `created_at` DESC limit 5';
-    const data = await recent(sql);
+    const id = req.params.id
+    const sql = 'SELECT * FROM `blogs` where status = "published" and id <> ?  ORDER BY `created_at` DESC limit 5';
+    const data = await recent(sql,id);
     return res.send(data)
 }
 
-const recent = (sql) =>{
+const recent = (sql,id) =>{
     return new Promise((resolve, reject) => {
-        let query = mysql.query(sql,(error, result, fields) => {
+        let query = mysql.query(sql,[id],(error, result, fields) => {
             if (error) return reject(error);
             resolve(Object.values(JSON.parse(JSON.stringify(result))))
         })

@@ -5,7 +5,7 @@ const { getBlogs, blogDetails, recentBlogs,category,filteredBlogs } = require('.
 router.route('/')
     .get(getBlogs);
 
-router.route('/recent-blogs')
+router.route('/recent-blogs/:id')
     .get(recentBlogs)
 
     router.route('/filtered-blogs/:id')
