@@ -28,5 +28,5 @@ module.exports = (app) =>{
     app.use('/api/seo-data',seoRouter);
     app.use('/api/common',commonRoutes);
     app.use('/api/fav',favouriteRoutes);
-    app.use('/api/ads',adsRoutes);
+    app.use('/api/media',adsRoutes);
 }

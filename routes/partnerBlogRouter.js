@@ -5,7 +5,7 @@ const router = express.Router();
 router.route('/')
     .get(fetchPartnerBlogs);
 
-    router.route('/recent-partner-blogs')
+    router.route('/recent-partner-blogs/:id')
         .get(recentPartnerBlogs)
 
 router.route('/:id')
