@@ -3,7 +3,7 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache();
 
 module.exports.getAllNews = async (req, res) => {
-    const news_sql = 'select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,city,staddress,postal,image,seo_keywords,seo_meta from news  order by id DESC limit 5';
+    const news_sql = 'select id,title,post_url,pubdate,description,content,slug,created_at,lat,lon,tags,state,city,staddress,postal,image,seo_keywords,seo_meta from news where state <>"" and city <>"" order by id DESC limit 5';
     let sql = 'SELECT a.`id`,a.p2000,a.straat,a.straat_url,a.lat,a.lng,a.prio,a.timestamp,';
     sql += ' b.provincie,c.regio,c.regio_url,d.categorie,d.categorie_url,e.dienst,f.stad,f.stad_url';
     sql += ' from melding a LEFT JOIN provincie b ON a.provincie = b.id LEFT JOIN regio c ON a.regio = c.id LEFT JOIN categorie';
